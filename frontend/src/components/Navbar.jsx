@@ -44,6 +44,9 @@ export default function Navbar() {
                     <Link to="/" className="px-5 py-2 rounded-full text-sm font-semibold text-white bg-white/10 border border-white/5 hover:bg-white/20 transition-all shadow-sm">
                         MOVIES
                     </Link>
+                    <Link to="/movie-registration" className="px-5 py-2 rounded-full text-sm font-semibold text-white bg-white/10 border border-white/5 hover:bg-white/20 transition-all shadow-sm">
+                        MOVIE REGISTRATION
+                    </Link>
                     {/* Add more links here if needed in future */}
                 </nav>
 
