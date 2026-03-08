@@ -211,12 +211,12 @@ export default function MovieDetails() {
 
                 {/* Large Calendar Section */}
                 <div className="bg-white rounded-xl shadow-lg p-6">
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                         <h2 className="text-2xl font-bold text-gray-900">Select Date</h2>
-                        <div className="flex space-x-4">
-                            <button onClick={prevMonth} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">&larr; Prev</button>
-                            <span className="text-xl font-semibold w-48 text-center">{monthName}</span>
-                            <button onClick={nextMonth} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Next &rarr;</button>
+                        <div className="flex justify-between md:justify-end items-center space-x-2 md:space-x-4 w-full md:w-auto">
+                            <button onClick={prevMonth} className="px-3 md:px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 whitespace-nowrap text-sm md:text-base">&larr; Prev</button>
+                            <span className="text-lg md:text-xl font-semibold w-40 md:w-48 text-center">{monthName}</span>
+                            <button onClick={nextMonth} className="px-3 md:px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 whitespace-nowrap text-sm md:text-base">Next &rarr;</button>
                         </div>
                     </div>
 
