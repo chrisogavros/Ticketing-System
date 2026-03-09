@@ -6,6 +6,9 @@ import Register from './pages/Register';
 import AdminRegister from './pages/AdminRegister';
 import UserProfile from './pages/UserProfile';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminCalendar from './pages/AdminCalendar';
+import AdminSpaces from './pages/AdminSpaces';
+import AdminScanner from './pages/AdminScanner';
 import GuestLayout from './components/GuestLayout';
 import DefaultLayout from './components/DefaultLayout';
 import MovieRegistration from './pages/MovieRegistration';
@@ -22,6 +25,9 @@ function App() {
           {/* We can make Profile protected later if we want, but for now it's here */}
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/calendar" element={<AdminCalendar />} />
+          <Route path="/admin/spaces" element={<AdminSpaces />} />
+          <Route path="/admin/scanner" element={<AdminScanner />} />
         </Route>
 
         {/* Guest Routes (Login/Register) - Redirect to Home if logged in */}

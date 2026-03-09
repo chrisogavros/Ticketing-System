@@ -87,4 +87,32 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logged out successfully']);
     }
+
+    public function loginAdmin(Request $request)
+    {
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            return response()->json([
+                'message' => 'Invalid login details'
+            ], 401);
+        }
+
+        $user = User::where('email', $request['email'])->firstOrFail();
+
+        // Check if the user is actually an admin
+        if (!$user->is_admin) {
+            // Log them out immediately
+            Auth::logout();
+            return response()->json([
+                'message' => 'Unauthorized. This account does not have admin privileges.'
+            ], 401);
+        }
+
+        $token = $user->createToken('admin_auth_token')->plainTextToken;
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user
+        ]);
+    }
 }

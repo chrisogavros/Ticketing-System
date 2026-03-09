@@ -167,10 +167,16 @@ export default function Register() {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 mb-2">
                             Already have an account?{' '}
                             <Link to="/login" className="font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
                                 Sign in instead
+                            </Link>
+                        </p>
+                        <p className="text-xs text-gray-500">
+                            Looking to become an Admin?{' '}
+                            <Link to="/admin/register" className="font-semibold text-purple-500 hover:text-purple-700 transition-colors">
+                                Register as Administrator
                             </Link>
                         </p>
                     </div>

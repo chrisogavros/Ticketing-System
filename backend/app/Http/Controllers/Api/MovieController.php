@@ -32,6 +32,7 @@ class MovieController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'duration_minutes' => 'required|integer',
+            'image' => 'nullable|string'
         ]);
 
         return Movie::create($request->all());

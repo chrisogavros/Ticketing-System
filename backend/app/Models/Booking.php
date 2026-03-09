@@ -12,7 +12,8 @@ class Booking extends Model
         'booking_reference',
         'seat_count',
         'total_price',
-        'status'
+        'status',
+        'is_attended'
     ];
 
     public function user()

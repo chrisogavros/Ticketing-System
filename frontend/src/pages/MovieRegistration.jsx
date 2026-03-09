@@ -105,7 +105,7 @@ export default function MovieRegistration() {
                         {/* Photo Field */}
                         <div className="space-y-2">
                             <label htmlFor="photo" className="block text-sm font-medium text-gray-300">
-                                Photo <span className="text-red-400">*</span>
+                                Photo <span className="text-gray-500">(Optional)</span>
                             </label>
 
                             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-white/10 border-dashed rounded-xl hover:border-purple-500/50 hover:bg-white/5 transition-all">
@@ -122,7 +122,7 @@ export default function MovieRegistration() {
                                     <div className="flex flex-col sm:flex-row text-sm text-gray-400 justify-center items-center mt-4">
                                         <label htmlFor="photo" className="relative cursor-pointer bg-gradient-to-r from-pink-500 to-purple-600 px-6 py-2.5 rounded-full font-bold text-white shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-pink-500 focus-within:ring-offset-gray-900 transition-all hover:scale-105 active:scale-95">
                                             <span>Upload a file</span>
-                                            <input id="photo" name="photo" type="file" className="sr-only" accept="image/*" required onChange={handleChange} />
+                                            <input id="photo" name="photo" type="file" className="sr-only" accept="image/*" onChange={handleChange} />
                                         </label>
                                     </div>
                                     <p className="text-xs text-gray-500 mt-2">
