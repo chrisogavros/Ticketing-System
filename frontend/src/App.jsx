@@ -8,6 +8,7 @@ import UserProfile from './pages/UserProfile';
 import AdminDashboard from './pages/AdminDashboard';
 import GuestLayout from './components/GuestLayout';
 import DefaultLayout from './components/DefaultLayout';
+import MovieRegistration from './pages/MovieRegistration';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route element={<DefaultLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/movies/:id" element={<MovieDetails />} />
+          <Route path="/movie-registration" element={<MovieRegistration />} />
           {/* We can make Profile protected later if we want, but for now it's here */}
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/admin" element={<AdminDashboard />} />
