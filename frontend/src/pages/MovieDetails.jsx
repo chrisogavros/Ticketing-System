@@ -15,6 +15,12 @@ export default function MovieDetails() {
     const [selectedDate, setSelectedDate] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    // Booking Details Modal State
+    const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+    const [selectedScreening, setSelectedScreening] = useState(null);
+    const [guestEmail, setGuestEmail] = useState('');
+    const [bookingSubmitting, setBookingSubmitting] = useState(false);
+
     // Data State
     const [screeningsForDate, setScreeningsForDate] = useState({});
 
@@ -83,25 +89,34 @@ export default function MovieDetails() {
         }
     };
 
-    const handleBookTicket = async (screeningId) => {
+    const handleBookTicketClick = (screening) => {
         if (!token) {
             navigate('/login');
             return;
         }
+        setSelectedScreening(screening);
+        setGuestEmail('');
+        setIsBookingModalOpen(true);
+    };
 
-        if (!window.confirm('Are you sure you want to book a ticket for this showtime?')) return;
+    const confirmBooking = async () => {
+        if (!selectedScreening) return;
+        setBookingSubmitting(true);
 
         try {
             await axiosClient.post('/bookings', {
-                screening_id: screeningId
+                screening_id: selectedScreening.id,
+                guest_email: guestEmail || null
             });
-            alert('Booking successful! Check your profile.');
-            // Refresh data to update seat count
+            alert('Booking successful! Check your profile or your email if provided.');
             fetchMovieData();
+            setIsBookingModalOpen(false);
             setIsModalOpen(false);
         } catch (error) {
             console.error('Booking failed:', error);
             alert(error.response?.data?.message || 'Booking failed. Please try again.');
+        } finally {
+            setBookingSubmitting(false);
         }
     };
 
@@ -274,7 +289,7 @@ export default function MovieDetails() {
                                                         <button
                                                             key={screening.id}
                                                             disabled={isFull}
-                                                            onClick={() => handleBookTicket(screening.id)}
+                                                            onClick={() => handleBookTicketClick(screening)}
                                                             className={`flex flex-col items-center justify-center bg-gray-50 border border-gray-200 p-4 rounded-xl transition-all group scale-100 duration-200
                                                                 ${isFull ? 'opacity-50 cursor-not-allowed bg-gray-100' : 'hover:border-blue-500 hover:bg-blue-50 hover:shadow-lg hover:scale-105 cursor-pointer'}
                                                             `}
@@ -309,6 +324,87 @@ export default function MovieDetails() {
                                     </button>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Booking Confirmation Details Modal */}
+            {isBookingModalOpen && selectedScreening && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-60 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-fade-in-up">
+                        {/* Header emphasizing the Date & Time */}
+                        <div className="bg-indigo-600 p-6 text-center text-white relative">
+                            <button onClick={() => setIsBookingModalOpen(false)} className="absolute top-4 right-4 text-indigo-200 hover:text-white text-2xl">&times;</button>
+                            <h3 className="text-sm font-bold tracking-wider uppercase text-indigo-200 mb-1">Confirm Registration</h3>
+                            <div className="text-3xl font-extrabold tracking-tight">
+                                {new Date(selectedScreening.start_time).toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                            </div>
+                            <div className="text-xl font-medium mt-1 text-indigo-100">
+                                at {new Date(selectedScreening.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                        </div>
+
+                        {/* Booking Summary */}
+                        <div className="p-6">
+                            <h4 className="text-xl font-bold text-gray-900 mb-4">{movie.title}</h4>
+                            
+                            <div className="space-y-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500 font-medium">Location (Hall):</span>
+                                    <span className="font-bold text-gray-900">{selectedScreening.hall.name}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500 font-medium">Ticket Price:</span>
+                                    <span className="font-bold text-green-600">${selectedScreening.price}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500 font-medium">Seat:</span>
+                                    <span className="font-bold text-gray-900">Auto-assigned</span>
+                                </div>
+                            </div>
+
+                            {/* Guest Email Form */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-bold text-gray-700 mb-2">
+                                    Send to a Guest (Optional)
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">If you want to send the booking details (code, description, photo) to someone else, enter their email below.</p>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <input 
+                                        type="email" 
+                                        placeholder="guest@example.com"
+                                        value={guestEmail}
+                                        onChange={(e) => setGuestEmail(e.target.value)}
+                                        className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex space-x-3 pt-4 border-t border-gray-100">
+                                <button 
+                                    onClick={() => setIsBookingModalOpen(false)}
+                                    className="flex-1 py-3 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition"
+                                    disabled={bookingSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    onClick={confirmBooking}
+                                    disabled={bookingSubmitting}
+                                    className={`flex-1 py-3 text-white font-bold rounded-lg transition shadow-md
+                                        ${bookingSubmitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg'}
+                                    `}
+                                >
+                                    {bookingSubmitting ? 'Confirming...' : 'Confirm & Book'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

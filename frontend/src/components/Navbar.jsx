@@ -69,29 +69,53 @@ export default function Navbar() {
                 {/* Desktop Auth Buttons */}
                 <div className="hidden md:flex items-center space-x-4">
                     {token ? (
-                        <div className="flex items-center space-x-4 pl-4 border-l border-white/10">
-                            <div className="text-right">
-                                <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Welcome</p>
-                                <div className="flex flex-col items-end">
-                                    <Link to="/profile" className="text-sm font-bold text-white leading-none hover:text-purple-400 transition-colors">
-                                        {user.name}
-                                    </Link>
-                                    {(user.is_admin === 1 || user.is_admin === true) && (
-                                        <Link to="/admin" className="text-[10px] text-purple-400 hover:text-purple-300 mt-0.5">
-                                            Admin Dashboard
-                                        </Link>
-                                    )}
+                        <div className="flex items-center space-x-4">
+                            
+                            {(user.is_admin === 1 || user.is_admin === true) && (
+                                <div className="relative group">
+                                    <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-purple-600/20 border border-purple-500/30 rounded-full hover:bg-purple-600/40 transition-colors focus:outline-none">
+                                        <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                        Admin Tools
+                                        <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                    </button>
+                                    <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                        <div className="bg-gray-800 border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
+                                            <Link to="/admin" className="px-4 py-2.5 text-sm text-gray-300 hover:bg-purple-500/20 hover:text-white transition-colors block text-left font-medium">
+                                                Dashboard
+                                            </Link>
+                                            <Link to="/admin/calendar" className="px-4 py-2.5 text-sm text-gray-300 hover:bg-purple-500/20 hover:text-white transition-colors block text-left border-t border-white/5 font-medium">
+                                                Calendar
+                                            </Link>
+                                            <Link to="/admin/spaces" className="px-4 py-2.5 text-sm text-gray-300 hover:bg-purple-500/20 hover:text-white transition-colors block text-left border-t border-white/5 font-medium">
+                                                Manage Spaces & Showtimes
+                                            </Link>
+                                            <Link to="/admin/scanner" className="px-4 py-2.5 text-sm text-gray-300 hover:bg-purple-500/20 hover:text-white transition-colors block text-left border-t border-white/5 font-medium">
+                                                Entry Scanner (QR)
+                                            </Link>
+                                        </div>
+                                    </div>
                                 </div>
+                            )}
+
+                            <div className="flex items-center space-x-4 pl-4 border-l border-white/10">
+                                <div className="text-right">
+                                    <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Welcome</p>
+                                    <div className="flex flex-col items-end">
+                                        <Link to="/profile" className="text-sm font-bold text-white leading-none hover:text-purple-400 transition-colors">
+                                            {user.name}
+                                        </Link>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={onLogout}
+                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-white/5 rounded-full transition-all"
+                                    title="Logout"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                                    </svg>
+                                </button>
                             </div>
-                            <button
-                                onClick={onLogout}
-                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-white/5 rounded-full transition-all"
-                                title="Logout"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-                                </svg>
-                            </button>
                         </div>
                     ) : (
                         <div className="flex items-center space-x-3">
@@ -136,13 +160,39 @@ export default function Navbar() {
                                 </Link>
 
                                 {(user.is_admin === 1 || user.is_admin === true) && (
-                                    <Link
-                                        to="/admin"
-                                        className="text-purple-400 font-medium py-2 hover:text-purple-300 transition-colors"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        Admin Dashboard
-                                    </Link>
+                                    <div className="py-2 mb-2 border-t border-white/5 border-b pb-4">
+                                        <p className="text-xs text-purple-400 font-bold mb-3 uppercase tracking-wider pl-2">Admin Tools</p>
+                                        <div className="flex flex-col space-y-3 pl-4 border-l-2 border-purple-500/30">
+                                            <Link
+                                                to="/admin"
+                                                className="text-gray-300 text-sm hover:text-purple-300 transition-colors"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                Dashboard
+                                            </Link>
+                                            <Link
+                                                to="/admin/calendar"
+                                                className="text-gray-300 text-sm hover:text-purple-300 transition-colors"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                Calendar
+                                            </Link>
+                                            <Link
+                                                to="/admin/spaces"
+                                                className="text-gray-300 text-sm hover:text-purple-300 transition-colors"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                Manage Spaces
+                                            </Link>
+                                            <Link
+                                                to="/admin/scanner"
+                                                className="text-gray-300 text-sm hover:text-purple-300 transition-colors"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                Entry Scanner
+                                            </Link>
+                                        </div>
+                                    </div>
                                 )}
 
                                 <button

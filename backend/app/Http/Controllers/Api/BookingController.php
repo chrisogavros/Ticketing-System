@@ -9,6 +9,8 @@ use App\Models\Booking;
 use App\Models\Screening;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\GuestBookingMail;
 
 class BookingController extends Controller
 {
@@ -27,6 +29,7 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'screening_id' => 'required|exists:screenings,id',
+            'guest_email' => 'nullable|email'
         ]);
 
         $screening = Screening::findOrFail($validated['screening_id']);
@@ -63,6 +66,18 @@ class BookingController extends Controller
             ]);
 
             DB::commit();
+
+            // Send Email if guest_email is provided
+            if (!empty($validated['guest_email'])) {
+                $booking->load(['screening.movie', 'screening.hall', 'user', 'tickets']);
+                try {
+                    Mail::to($validated['guest_email'])->send(new GuestBookingMail($booking));
+                } catch (\Exception $mailEx) {
+                    \Log::error('Failed to send GuestBookingMail: ' . $mailEx->getMessage());
+                    // We do not fail the booking if email fails (often config issues locally)
+                }
+            }
+
             return response()->json($booking->load('tickets'), 201);
 
         } catch (\Exception $e) {

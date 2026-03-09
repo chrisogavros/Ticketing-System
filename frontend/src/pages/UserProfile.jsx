@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import axiosClient from '../lib/axios';
 import { useStateContext } from '../contexts/ContextProvider';
 import { Link } from 'react-router-dom';
+import QRCode from 'react-qr-code';
 
 export default function UserProfile() {
     const { user, token } = useStateContext();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedQr, setSelectedQr] = useState(null);
 
     useEffect(() => {
         let isMounted = true;
@@ -132,11 +134,26 @@ export default function UserProfile() {
                                                 <div className="text-sm text-gray-500 mb-2">
                                                     {new Date(booking.screening.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {booking.screening.hall.name}
                                                 </div>
-                                                <div className="flex items-center text-sm font-medium text-gray-700">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1 text-purple-600">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v4.5c0 .621.504 1.125 1.125 1.125h4.5c.621 0 1.125-.504 1.125-1.125V6.375c0-.621-.504-1.125-1.125-1.125H3.375zm0 13.5c-.621 0-1.125.504-1.125 1.125v4.5c0 .621.504 1.125 1.125 1.125h4.5c.621 0 1.125-.504 1.125-1.125v-4.5c0-.621-.504-1.125-1.125-1.125H3.375z" />
-                                                    </svg>
-                                                    {booking.seat_count} Seats • {booking.total_price}€
+                                                <div className="flex items-center justify-between mt-3">
+                                                    <div className="flex items-center text-sm font-medium text-gray-700">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1 text-purple-600">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v4.5c0 .621.504 1.125 1.125 1.125h4.5c.621 0 1.125-.504 1.125-1.125V6.375c0-.621-.504-1.125-1.125-1.125H3.375zm0 13.5c-.621 0-1.125.504-1.125 1.125v4.5c0 .621.504 1.125 1.125 1.125h4.5c.621 0 1.125-.504 1.125-1.125v-4.5c0-.621-.504-1.125-1.125-1.125H3.375z" />
+                                                        </svg>
+                                                        {booking.seat_count} Seats • {booking.total_price}€
+                                                    </div>
+                                                    
+                                                    {booking.status === 'confirmed' && (
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); setSelectedQr(booking); }}
+                                                            className="flex items-center text-sm font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-1">
+                                                              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
+                                                              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z" />
+                                                            </svg>
+                                                            Show Ticket
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -160,6 +177,40 @@ export default function UserProfile() {
                     </div>
                 </div>
             </div>
+
+            {/* QR Code Ticket Modal */}
+            {selectedQr && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black bg-opacity-70 backdrop-blur-sm" onClick={() => setSelectedQr(null)}>
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full animate-fade-in-up text-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="mb-6">
+                            <h2 className="text-2xl font-black text-gray-900">{selectedQr.screening.movie.title}</h2>
+                            <p className="text-gray-500 font-medium">{new Date(selectedQr.screening.start_time).toLocaleString()}</p>
+                            <p className="text-sm font-bold text-indigo-600 mt-1">{selectedQr.screening.hall.name}</p>
+                        </div>
+                        
+                        <div className="bg-white p-4 rounded-xl shadow-inner border-2 border-dashed border-gray-200 inline-block mb-6">
+                            <QRCode 
+                                value={selectedQr.booking_reference} 
+                                size={200}
+                                level="H"
+                            />
+                        </div>
+
+                        <div className="bg-gray-100 py-3 rounded-lg border border-gray-200 mb-6">
+                            <p className="text-xs text-gray-500 uppercase font-bold mb-1">Booking Reference</p>
+                            <p className="font-mono font-bold text-xl tracking-widest text-gray-800">{selectedQr.booking_reference}</p>
+                        </div>
+
+                        <button 
+                            onClick={() => setSelectedQr(null)}
+                            className="w-full py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition shadow-lg"
+                        >
+                            Close Ticket
+                        </button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
