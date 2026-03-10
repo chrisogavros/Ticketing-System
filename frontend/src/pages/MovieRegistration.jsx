@@ -6,6 +6,7 @@ export default function MovieRegistration() {
     const [formData, setFormData] = useState({
         name: '',
         surname: '',
+        email: '',
         phone: '',
         photo: null
     });
@@ -82,6 +83,23 @@ export default function MovieRegistration() {
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 bg-white border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-gray-800 placeholder-gray-500"
                                 placeholder="Enter your surname"
+                            />
+                        </div>
+
+                        {/* Email Field */}
+                        <div className="space-y-2">
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+                                Email <span className="text-red-400">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                required
+                                value={formData.email}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 bg-white border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-gray-800 placeholder-gray-500"
+                                placeholder="Enter your email address"
                             />
                         </div>
 
