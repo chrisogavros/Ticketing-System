@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import axiosClient from '../lib/axios';
 import { useStateContext } from '../contexts/ContextProvider';
 import { Link } from 'react-router-dom';
+import UserMovieSearchBar from '../components/UserMovieSearchBar';
 
 export default function UserProfile() {
     const { user, token } = useStateContext();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         let isMounted = true;
@@ -91,56 +93,62 @@ export default function UserProfile() {
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
                             <h3 className="text-xl font-bold text-gray-900 mb-6">Booking History</h3>
 
+                            {!loading && bookings.length > 0 && (
+                                <UserMovieSearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+                            )}
+
                             {loading ? (
                                 <div className="flex justify-center py-12">
                                     <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
                                 </div>
                             ) : bookings.length > 0 ? (
                                 <div className="space-y-4">
-                                    {bookings.map((booking) => (
-                                        <div key={booking.id} className="flex flex-col sm:flex-row gap-4 p-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 transition-all cursor-pointer group">
-                                            {/* Date Box */}
-                                            <div className="sm:w-20 sm:h-20 bg-gray-100 rounded-lg flex flex-col items-center justify-center text-center group-hover:bg-white group-hover:shadow-sm transition-all">
-                                                <span className="text-xs font-bold text-gray-400 uppercase">
-                                                    {new Date(booking.screening.start_time).toLocaleString('default', { month: 'short' })}
-                                                </span>
-                                                <span className="text-2xl font-black text-gray-900">
-                                                    {new Date(booking.screening.start_time).getDate()}
-                                                </span>
-                                                <span className="text-xs text-gray-500">
-                                                    {new Date(booking.screening.start_time).getFullYear()}
-                                                </span>
-                                            </div>
+                                    {bookings
+                                        .filter(booking => booking.screening.movie.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                                        .map((booking) => (
+                                            <div key={booking.id} className="flex flex-col sm:flex-row gap-4 p-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 transition-all cursor-pointer group">
+                                                {/* Date Box */}
+                                                <div className="sm:w-20 sm:h-20 bg-gray-100 rounded-lg flex flex-col items-center justify-center text-center group-hover:bg-white group-hover:shadow-sm transition-all">
+                                                    <span className="text-xs font-bold text-gray-400 uppercase">
+                                                        {new Date(booking.screening.start_time).toLocaleString('default', { month: 'short' })}
+                                                    </span>
+                                                    <span className="text-2xl font-black text-gray-900">
+                                                        {new Date(booking.screening.start_time).getDate()}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500">
+                                                        {new Date(booking.screening.start_time).getFullYear()}
+                                                    </span>
+                                                </div>
 
-                                            {/* Details */}
-                                            <div className="flex-1">
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <h4 className="text-lg font-bold text-gray-900 group-hover:text-purple-700 transition-colors">
-                                                        {booking.screening.movie.title}
-                                                    </h4>
-                                                    {booking.status === 'confirmed' ? (
-                                                        <Link to="/movie-registration" className="px-3 py-1.5 text-xs font-bold rounded bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition-colors shadow-sm border border-yellow-200" onClick={(e) => e.stopPropagation()}>
-                                                            Must Registrate first
-                                                        </Link>
-                                                    ) : (
-                                                        <span className={`px-2 py-1 text-xs font-bold rounded uppercase ${booking.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
-                                                            }`}>
-                                                            {booking.status}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="text-sm text-gray-500 mb-2">
-                                                    {new Date(booking.screening.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {booking.screening.hall.name}
-                                                </div>
-                                                <div className="flex items-center text-sm font-medium text-gray-700">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1 text-purple-600">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v4.5c0 .621.504 1.125 1.125 1.125h4.5c.621 0 1.125-.504 1.125-1.125V6.375c0-.621-.504-1.125-1.125-1.125H3.375zm0 13.5c-.621 0-1.125.504-1.125 1.125v4.5c0 .621.504 1.125 1.125 1.125h4.5c.621 0 1.125-.504 1.125-1.125v-4.5c0-.621-.504-1.125-1.125-1.125H3.375z" />
-                                                    </svg>
-                                                    {booking.seat_count} Seats • {booking.total_price}€
+                                                {/* Details */}
+                                                <div className="flex-1">
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <h4 className="text-lg font-bold text-gray-900 group-hover:text-purple-700 transition-colors">
+                                                            {booking.screening.movie.title}
+                                                        </h4>
+                                                        {booking.status === 'confirmed' ? (
+                                                            <Link to="/movie-registration" className="px-3 py-1.5 text-xs font-bold rounded bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition-colors shadow-sm border border-yellow-200" onClick={(e) => e.stopPropagation()}>
+                                                                Must Registrate first
+                                                            </Link>
+                                                        ) : (
+                                                            <span className={`px-2 py-1 text-xs font-bold rounded uppercase ${booking.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
+                                                                }`}>
+                                                                {booking.status}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500 mb-2">
+                                                        {new Date(booking.screening.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {booking.screening.hall.name}
+                                                    </div>
+                                                    <div className="flex items-center text-sm font-medium text-gray-700">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1 text-purple-600">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v4.5c0 .621.504 1.125 1.125 1.125h4.5c.621 0 1.125-.504 1.125-1.125V6.375c0-.621-.504-1.125-1.125-1.125H3.375zm0 13.5c-.621 0-1.125.504-1.125 1.125v4.5c0 .621.504 1.125 1.125 1.125h4.5c.621 0 1.125-.504 1.125-1.125v-4.5c0-.621-.504-1.125-1.125-1.125H3.375z" />
+                                                        </svg>
+                                                        {booking.seat_count} Seats • {booking.total_price}€
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
                                 </div>
                             ) : (
                                 <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
