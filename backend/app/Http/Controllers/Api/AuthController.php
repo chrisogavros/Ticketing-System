@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -14,42 +13,46 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'name'     => 'required|string|max:255',
+            'surname'  => 'nullable|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users',
+            'phone'    => 'nullable|string|max:50|unique:users',
             'password' => 'required|string|min:8',
         ]);
 
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
+            'name'     => $validated['name'],
+            'surname'  => $validated['surname'] ?? null,
+            'email'    => $validated['email'],
+            'phone'    => $validated['phone'] ?? null,
             'password' => Hash::make($validated['password']),
-            'is_admin' => false, // Explicitly set to false for normal registration
+            'is_admin' => false,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user
+            'token_type'   => 'Bearer',
+            'user'         => $user->load('roles'),
         ]);
     }
 
     public function registerAdmin(Request $request)
     {
-        // In a real app, this route should probably be protected by a master key or similar.
-        // For this exercise, we expose it but it's a specific route.
-
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'name'     => 'required|string|max:255',
+            'surname'  => 'nullable|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users',
+            'phone'    => 'nullable|string|max:50|unique:users',
             'password' => 'required|string|min:8',
-            // Maybe a secret key?
         ]);
 
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
+            'name'     => $validated['name'],
+            'surname'  => $validated['surname'] ?? null,
+            'email'    => $validated['email'],
+            'phone'    => $validated['phone'] ?? null,
             'password' => Hash::make($validated['password']),
             'is_admin' => true,
         ]);
@@ -58,27 +61,24 @@ class AuthController extends Controller
 
         return response()->json([
             'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user
+            'token_type'   => 'Bearer',
+            'user'         => $user->load('roles'),
         ]);
     }
 
     public function login(Request $request)
     {
         if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json([
-                'message' => 'Invalid login details'
-            ], 401);
+            return response()->json(['message' => 'Invalid login details'], 401);
         }
 
-        $user = User::where('email', $request['email'])->firstOrFail();
-
+        $user = User::with('roles')->where('email', $request['email'])->firstOrFail();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user
+            'token_type'   => 'Bearer',
+            'user'         => $user,
         ]);
     }
 
@@ -91,19 +91,15 @@ class AuthController extends Controller
     public function loginAdmin(Request $request)
     {
         if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json([
-                'message' => 'Invalid login details'
-            ], 401);
+            return response()->json(['message' => 'Invalid login details'], 401);
         }
 
-        $user = User::where('email', $request['email'])->firstOrFail();
+        $user = User::with('roles')->where('email', $request['email'])->firstOrFail();
 
-        // Check if the user is actually an admin
         if (!$user->is_admin) {
-            // Log them out immediately
             Auth::logout();
             return response()->json([
-                'message' => 'Unauthorized. This account does not have admin privileges.'
+                'message' => 'Unauthorized. This account does not have admin privileges.',
             ], 401);
         }
 
@@ -111,8 +107,8 @@ class AuthController extends Controller
 
         return response()->json([
             'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user
+            'token_type'   => 'Bearer',
+            'user'         => $user,
         ]);
     }
 }
