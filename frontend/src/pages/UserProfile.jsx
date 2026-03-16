@@ -121,8 +121,8 @@ export default function UserProfile() {
                                                         {booking.screening.movie.title}
                                                     </h4>
                                                     {booking.status === 'confirmed' ? (
-                                                        <Link to="/movie-registration" className="px-3 py-1.5 text-xs font-bold rounded bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition-colors shadow-sm border border-yellow-200" onClick={(e) => e.stopPropagation()}>
-                                                            Must Registrate first
+                                                        <Link to="/entry/register" className="px-3 py-1.5 text-xs font-bold rounded bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition-colors shadow-sm border border-yellow-200" onClick={(e) => e.stopPropagation()}>
+                                                            Ολοκλήρωση Στοιχείων (Entry)
                                                         </Link>
                                                     ) : (
                                                         <span className={`px-2 py-1 text-xs font-bold rounded uppercase ${booking.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'

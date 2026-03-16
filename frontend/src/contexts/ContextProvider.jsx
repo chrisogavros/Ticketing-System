@@ -6,6 +6,7 @@ const StateContext = createContext({
     token: null,
     setUser: () => { },
     setToken: () => { },
+    hasRole: () => false,
 });
 
 export const ContextProvider = ({ children }) => {
@@ -21,6 +22,11 @@ export const ContextProvider = ({ children }) => {
         }
     };
 
+    const hasRole = (roleName) => {
+        if (!user || !user.roles) return false;
+        return user.roles.some((r) => r.name === roleName);
+    };
+
     useEffect(() => {
         if (token) {
             axiosClient.get('/user')
@@ -34,10 +40,11 @@ export const ContextProvider = ({ children }) => {
     }, [token]);
 
     return (
-        <StateContext.Provider value={{ user, setUser, token, setToken }}>
+        <StateContext.Provider value={{ user, setUser, token, setToken, hasRole }}>
             {children}
         </StateContext.Provider>
     );
 };
 
 export const useStateContext = () => useContext(StateContext);
+

@@ -18,6 +18,7 @@ export default function MovieDetails() {
     // Booking Details Modal State
     const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
     const [selectedScreening, setSelectedScreening] = useState(null);
+    const [sendEmail, setSendEmail] = useState(false);
     const [guestEmail, setGuestEmail] = useState('');
     const [bookingSubmitting, setBookingSubmitting] = useState(false);
 
@@ -106,9 +107,9 @@ export default function MovieDetails() {
         try {
             await axiosClient.post('/bookings', {
                 screening_id: selectedScreening.id,
-                guest_email: guestEmail || null
+                guest_email: (sendEmail && guestEmail) ? guestEmail : null
             });
-            alert('Booking successful! Check your profile or your email if provided.');
+            alert('Η κράτηση ολοκληρώθηκε! ' + (sendEmail ? 'Τα στοιχεία θα αποσταλούν στο email.' : 'Δείτε τα στοιχεία στο προφίλ σας.'));
             fetchMovieData();
             setIsBookingModalOpen(false);
             setIsModalOpen(false);
@@ -364,26 +365,41 @@ export default function MovieDetails() {
                                 </div>
                             </div>
 
-                            {/* Guest Email Form */}
-                            <div className="mb-6">
-                                <label className="block text-sm font-bold text-gray-700 mb-2">
-                                    Send to a Guest (Optional)
-                                </label>
-                                <p className="text-xs text-gray-500 mb-2">If you want to send the booking details (code, description, photo) to someone else, enter their email below.</p>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
+                            {/* Guest Email Toggle */}
+                            <div className="mb-6 bg-gray-50 border border-gray-100 p-4 rounded-xl">
+                                <label className="flex items-center space-x-3 cursor-pointer">
                                     <input 
-                                        type="email" 
-                                        placeholder="guest@example.com"
-                                        value={guestEmail}
-                                        onChange={(e) => setGuestEmail(e.target.value)}
-                                        className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                        type="checkbox" 
+                                        checked={sendEmail}
+                                        onChange={(e) => setSendEmail(e.target.checked)}
+                                        className="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
                                     />
-                                </div>
+                                    <span className="text-sm font-bold text-gray-800">
+                                        Αποστολή στοιχείων κράτησης με email
+                                    </span>
+                                </label>
+                                
+                                {sendEmail && (
+                                    <div className="mt-4 pt-4 border-t border-gray-200 animate-fade-in-up">
+                                        <p className="text-xs text-gray-500 mb-2">
+                                            Τα στοιχεία της κράτησης (Κωδικός, Όνομα Πελάτη, Περιγραφή & Φωτογραφία Αίθουσας) θα αποσταλούν.
+                                        </p>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                </svg>
+                                            </div>
+                                            <input 
+                                                type="email" 
+                                                placeholder="guest@example.com (Προαιρετικό)"
+                                                value={guestEmail}
+                                                onChange={(e) => setGuestEmail(e.target.value)}
+                                                className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Actions */}
