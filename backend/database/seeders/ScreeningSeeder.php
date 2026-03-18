@@ -10,44 +10,73 @@ use Carbon\Carbon;
 
 class ScreeningSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        $movies = Movie::all();
-        $halls = Hall::all();
+        $movies = Movie::all()->values();
+        $halls = Hall::all()->values();
 
-        // Ensure we have halls and movies
         if ($movies->isEmpty() || $halls->isEmpty()) {
             return;
         }
 
-        // Disable foreign key checks to allow truncation
+        // Truncate screenings table cleanly
         \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
         Screening::truncate();
         \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
 
-        foreach ($movies as $movie) {
-            foreach ($halls as $hall) {
-                // Generate screenings for the next 4 months (approx 120 days)
-                // We'll create a screening every few days per hall to avoid too much data, 
-                // or maybe 1 per day per hall. Let's do 1 screening every day for 4 months.
-                $startDate = Carbon::today();
+        $movieCount = $movies->count(); // 6
+        $hallCount = $halls->count();  // 6
 
-                for ($day = 0; $day < 120; $day++) {
-                    // Random start times between 14:00 and 23:00
-                    // This gives us some before 18:00 (to test filtering) and some after.
-                    $hour = rand(14, 23);
-                    $minute = rand(0, 1) * 30; // 00 or 30
+        // 3 evening time slots: 18:00, 20:00, 22:00
+        // For each slot, each hall gets exactly ONE different movie → zero conflicts.
+        // Assignment formula: movieIdx = (hallIdx + slotIdx * 2 + day) % movieCount
+        // Because hallIdx is unique per slot, no two halls get the same movie at the same time.
+        $timeSlots = [
+            ['hour' => 18, 'minute' => 0],
+            ['hour' => 20, 'minute' => 0],
+            ['hour' => 22, 'minute' => 0],
+        ];
 
-                    $screeningTime = $startDate->copy()->addDays($day)->setTime($hour, $minute);
+        // Pricing per hall type
+        $priceMap = [
+            'VIP Lounge' => 25.00,
+            'IMAX Experience' => 18.00,
+            '3D Experience' => 15.00,
+        ];
 
-                    Screening::create([
+        $startDate = Carbon::today();
+        $endDate = Carbon::create(2026, 7, 31)->endOfDay();
+        $totalDays = (int) $startDate->diffInDays($endDate) + 1;
+
+        $toInsert = [];
+        $now = now()->format('Y-m-d H:i:s');
+
+        for ($day = 0; $day < $totalDays; $day++) {
+            $date = $startDate->copy()->addDays($day);
+
+            foreach ($timeSlots as $slotIdx => $slot) {
+                foreach ($halls as $hallIdx => $hall) {
+                    // Rotate which movie plays in this hall at this slot each day
+                    $movieIdx = ($hallIdx + $slotIdx * 2 + $day) % $movieCount;
+                    $movie = $movies[$movieIdx];
+
+                    $price = $priceMap[$hall->name] ?? 12.00;
+
+                    $toInsert[] = [
                         'movie_id' => $movie->id,
                         'hall_id' => $hall->id,
-                        'start_time' => $screeningTime,
-                        'price' => $hall->name === 'VIP Lounge' ? 25.00 : ($hall->name === 'IMAX Experience' ? 18.00 : 12.00)
-                    ]);
+                        'start_time' => $date->copy()->setHour($slot['hour'])->setMinute($slot['minute'])->setSecond(0)->format('Y-m-d H:i:s'),
+                        'price' => $price,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
                 }
             }
+        }
+
+        // Bulk-insert in chunks for performance
+        foreach (array_chunk($toInsert, 500) as $chunk) {
+            Screening::insert($chunk);
         }
     }
 }
