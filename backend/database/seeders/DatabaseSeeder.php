@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Movie;
 use App\Models\Hall;
-use App\Models\Screening;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -18,79 +17,99 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Roles
-        $roleAdmin = Role::create(['name' => 'admin', 'description' => 'Administrator']);
-        $roleUser = Role::create(['name' => 'user', 'description' => 'Regular User']);
+        $roleAdmin = Role::firstOrCreate(['name' => 'admin'], ['description' => 'Administrator']);
+        $roleUser = Role::firstOrCreate(['name' => 'user'], ['description' => 'Regular User']);
 
         // Admin User
-        $admin = User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'),
-        ]);
-        $admin->roles()->attach($roleAdmin);
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password'),
+                'is_admin' => true,
+            ]
+        );
+        $admin->roles()->syncWithoutDetaching([$roleAdmin->id]);
 
-        // Halls
-        $hall1 = Hall::create(['name' => 'Hall A (Dolby Atmos)', 'total_rows' => 8, 'total_cols' => 10]);
-        $hall2 = Hall::create(['name' => 'Hall B (IMAX)', 'total_rows' => 10, 'total_cols' => 15]);
+        // ── 6 Halls ──────────────────────────────────────────────────────────
+        $hallsData = [
+            ['name' => 'Hall 1 (Standard)', 'total_rows' => 10, 'total_cols' => 15],
+            ['name' => 'Hall 2 (Standard)', 'total_rows' => 10, 'total_cols' => 15],
+            ['name' => 'Hall 3 (Standard)', 'total_rows' => 10, 'total_cols' => 15],
+            ['name' => 'IMAX Experience', 'total_rows' => 15, 'total_cols' => 20],
+            ['name' => '3D Experience', 'total_rows' => 12, 'total_cols' => 18],
+            ['name' => 'VIP Lounge', 'total_rows' => 5, 'total_cols' => 10],
+        ];
 
-        // Movies
-        $movie1 = Movie::create([
-            'title' => 'Inception',
-            'description' => 'A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.',
-            'duration_minutes' => 148,
-            'genre' => 'Sci-Fi',
-            'director' => 'Christopher Nolan',
-            'release_date' => '2010-07-16',
-            'poster_url' => 'https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg' // Public placeholder
-        ]);
+        $halls = [];
+        foreach ($hallsData as $hd) {
+            $halls[] = Hall::firstOrCreate(['name' => $hd['name']], $hd);
+        }
 
-        $movie2 = Movie::create([
-            'title' => 'The Dark Knight',
-            'description' => 'When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.',
-            'duration_minutes' => 152,
-            'genre' => 'Action',
-            'director' => 'Christopher Nolan',
-            'release_date' => '2008-07-18',
-            'poster_url' => 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg'
-        ]);
+        // ── 6 Movies (with TMDB posters) ─────────────────────────────────────
+        $moviesData = [
+            [
+                'title' => 'Inception',
+                'description' => 'A thief who steals corporate secrets through dream-sharing technology is given the task of planting an idea into the mind of a CEO.',
+                'duration_minutes' => 148,
+                'genre' => 'Sci-Fi',
+                'director' => 'Christopher Nolan',
+                'release_date' => '2010-07-16',
+                'poster_url' => 'https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg',
+            ],
+            [
+                'title' => 'The Dark Knight',
+                'description' => 'Batman faces the Joker, who plunges Gotham City into anarchy, forcing him to question his own ideals to stop him.',
+                'duration_minutes' => 152,
+                'genre' => 'Action',
+                'director' => 'Christopher Nolan',
+                'release_date' => '2008-07-18',
+                'poster_url' => 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
+            ],
+            [
+                'title' => 'Interstellar',
+                'description' => 'A team of explorers travel through a wormhole in space in an attempt to ensure humanity\'s survival.',
+                'duration_minutes' => 169,
+                'genre' => 'Sci-Fi',
+                'director' => 'Christopher Nolan',
+                'release_date' => '2014-11-07',
+                'poster_url' => 'https://image.tmdb.org/t/p/w500/yQvGrMoipbRoddT0ZR8tPoR7NfX.jpg',
+            ],
+            [
+                'title' => 'Dunkirk',
+                'description' => 'Allied soldiers are surrounded and evacuated from the beaches of Dunkirk during a fierce battle in World War II.',
+                'duration_minutes' => 106,
+                'genre' => 'War/Action',
+                'director' => 'Christopher Nolan',
+                'release_date' => '2017-07-21',
+                'poster_url' => 'https://image.tmdb.org/t/p/w500/b4Oe15CGLL61Ped0RAS9JpqdmCt.jpg',
+            ],
+            [
+                'title' => 'Tenet',
+                'description' => 'A secret agent embarks on a dangerous, time-bending mission to prevent World War III, armed with only one word: Tenet.',
+                'duration_minutes' => 150,
+                'genre' => 'Sci-Fi/Action',
+                'director' => 'Christopher Nolan',
+                'release_date' => '2020-08-26',
+                'poster_url' => 'https://image.tmdb.org/t/p/w500/k68nPLbIST6NP96JmTxmZijEvCA.jpg',
+            ],
+            [
+                'title' => 'Oppenheimer',
+                'description' => 'The story of J. Robert Oppenheimer\'s role in the development of the atomic bomb during World War II.',
+                'duration_minutes' => 180,
+                'genre' => 'Biography/Drama',
+                'director' => 'Christopher Nolan',
+                'release_date' => '2023-07-21',
+                'poster_url' => 'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',
+            ],
+        ];
 
-        $movie3 = Movie::create([
-            'title' => 'Interstellar',
-            'description' => 'A team of explorers travel through a wormhole in space in an attempt to ensure humanity\'s survival.',
-            'duration_minutes' => 169,
-            'genre' => 'Sci-Fi',
-            'director' => 'Christopher Nolan',
-            'release_date' => '2014-11-07',
-            'poster_url' => 'https://image.tmdb.org/t/p/w500/gEU2QniL6E8ahMcafCUyGdI9no8.jpg'
-        ]);
+        $movies = [];
+        foreach ($moviesData as $md) {
+            $movies[] = Movie::firstOrCreate(['title' => $md['title']], $md);
+        }
 
-        // Screenings (Next 7 days)
-        Screening::create([
-            'movie_id' => $movie1->id,
-            'hall_id' => $hall1->id,
-            'start_time' => now()->addDays(1)->setHour(18)->setMinute(0),
-            'price' => 12.00
-        ]);
-
-        Screening::create([
-            'movie_id' => $movie1->id,
-            'hall_id' => $hall1->id,
-            'start_time' => now()->addDays(1)->setHour(21)->setMinute(0),
-            'price' => 12.00
-        ]);
-
-        Screening::create([
-            'movie_id' => $movie2->id,
-            'hall_id' => $hall2->id,
-            'start_time' => now()->addDays(2)->setHour(19)->setMinute(30),
-            'price' => 15.00
-        ]);
-
-        Screening::create([
-            'movie_id' => $movie3->id,
-            'hall_id' => $hall2->id,
-            'start_time' => now()->addDays(3)->setHour(20)->setMinute(00),
-            'price' => 14.00
-        ]);
+        // ── Screenings (delegate to ScreeningSeeder) ──────────────────────────
+        $this->call(ScreeningSeeder::class);
     }
 }

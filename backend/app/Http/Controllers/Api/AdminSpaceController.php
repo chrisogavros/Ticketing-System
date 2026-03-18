@@ -35,7 +35,7 @@ class AdminSpaceController extends Controller
     public function updateHall(Request $request, $id)
     {
         $hall = Hall::findOrFail($id);
-        
+
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'total_rows' => 'sometimes|required|integer|min:1',
@@ -54,13 +54,14 @@ class AdminSpaceController extends Controller
             DB::beginTransaction();
             // Check for affected bookings in all screenings of this hall
             $screenings = $hall->screenings()->with('bookings.user')->get();
-            
+
             foreach ($screenings as $screening) {
                 foreach ($screening->bookings as $booking) {
                     if ($booking->status !== 'cancelled') {
                         try {
                             Mail::to($booking->user->email)->send(new ScreeningChangedMail($booking->user, $screening, 'deleted'));
-                        } catch (\Exception $e) {}
+                        } catch (\Exception $e) {
+                        }
                     }
                 }
                 $screening->bookings()->delete();
@@ -89,53 +90,63 @@ class AdminSpaceController extends Controller
             'movie_id' => 'required|exists:movies,id',
             'hall_id' => 'required|exists:halls,id',
             'start_time' => 'required|date',
-            'end_time' => 'required|date|after:start_time',
             'price' => 'required|numeric|min:0',
         ]);
 
+        // Compute end time from movie duration to check for overlaps
+        $movie = \App\Models\Movie::findOrFail($validated['movie_id']);
+        $startTime = \Carbon\Carbon::parse($validated['start_time']);
+        $endTime = $startTime->copy()->addMinutes($movie->duration_minutes);
+
         $overlap = Screening::where('hall_id', $validated['hall_id'])
-            ->where('start_time', '<', $validated['end_time'])
-            ->where('end_time', '>', $validated['start_time'])
+            ->where('start_time', '<', $endTime)
+            ->whereRaw("DATE_ADD(start_time, INTERVAL (SELECT duration_minutes FROM movies WHERE id = movie_id) MINUTE) > ?", [$startTime])
             ->exists();
 
         if ($overlap) {
-            return response()->json(['message' => 'OVERLAP_ERROR: The selected time slot overlaps with an existing screening in this hall.'], 422);
+            return response()->json(['message' => 'OVERLAP_ERROR: This time slot overlaps with another screening in this hall.'], 422);
         }
 
-        $screening = Screening::create($validated);
+        $screening = Screening::create([
+            'movie_id' => $validated['movie_id'],
+            'hall_id' => $validated['hall_id'],
+            'start_time' => $validated['start_time'],
+            'price' => $validated['price'],
+        ]);
         return response()->json($screening->load(['movie', 'hall']), 201);
     }
 
     public function updateScreening(Request $request, $id)
     {
         $screening = Screening::findOrFail($id);
-        
+
         $validated = $request->validate([
             'movie_id' => 'sometimes|required|exists:movies,id',
             'hall_id' => 'sometimes|required|exists:halls,id',
             'start_time' => 'sometimes|required|date',
-            'end_time' => 'sometimes|required|date|after:start_time',
             'price' => 'sometimes|required|numeric|min:0',
         ]);
 
         $hall_id = $validated['hall_id'] ?? $screening->hall_id;
-        $start_time = $validated['start_time'] ?? $screening->start_time;
-        $end_time = $validated['end_time'] ?? $screening->end_time;
+        $movie_id = $validated['movie_id'] ?? $screening->movie_id;
+        $start_time = \Carbon\Carbon::parse($validated['start_time'] ?? $screening->start_time);
+        $movie = \App\Models\Movie::findOrFail($movie_id);
+        $end_time = $start_time->copy()->addMinutes($movie->duration_minutes);
 
         $overlap = Screening::where('id', '!=', $id)
             ->where('hall_id', $hall_id)
             ->where('start_time', '<', $end_time)
-            ->where('end_time', '>', $start_time)
+            ->whereRaw("DATE_ADD(start_time, INTERVAL (SELECT duration_minutes FROM movies WHERE id = movie_id) MINUTE) > ?", [$start_time])
             ->exists();
 
         if ($overlap) {
-            return response()->json(['message' => 'OVERLAP_ERROR: The selected time slot overlaps with an existing screening in this hall.'], 422);
+            return response()->json(['message' => 'OVERLAP_ERROR: This time slot overlaps with another screening in this hall.'], 422);
         }
 
-        // Check if time or hall changed, which might affect bookings
-        $timeChanged = isset($validated['start_time']) && $validated['start_time'] !== $screening->start_time;
-        
-        $screening->update($validated);
+        // Check if time changed, which might affect bookings
+        $timeChanged = isset($validated['start_time']) && $validated['start_time'] !== (string) $screening->start_time;
+
+        $screening->update(array_filter($validated, fn($v) => $v !== null));
 
         if ($timeChanged) {
             $screening->load(['bookings.user', 'movie', 'hall']);
@@ -143,7 +154,8 @@ class AdminSpaceController extends Controller
                 if ($booking->status !== 'cancelled') {
                     try {
                         Mail::to($booking->user->email)->send(new ScreeningChangedMail($booking->user, $screening, 'updated'));
-                    } catch (\Exception $e) {}
+                    } catch (\Exception $e) {
+                    }
                 }
             }
         }
@@ -158,13 +170,14 @@ class AdminSpaceController extends Controller
         try {
             DB::beginTransaction();
             $screening->load(['bookings.user', 'movie', 'hall']);
-            
+
             // Notify booked users
             foreach ($screening->bookings as $booking) {
                 if ($booking->status !== 'cancelled') {
                     try {
                         Mail::to($booking->user->email)->send(new ScreeningChangedMail($booking->user, $screening, 'deleted'));
-                    } catch (\Exception $e) {}
+                    } catch (\Exception $e) {
+                    }
                 }
             }
 

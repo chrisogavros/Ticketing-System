@@ -8,9 +8,9 @@ export default function VisitorEntry() {
     const emailRef = useRef();
     const phoneRef = useRef();
     const passwordRef = useRef(); // Required for native auth, even for visitors
-    
+
     // We're keeping it simple for the MVP photo capture
-    const photoRef = useRef(null); 
+    const photoRef = useRef(null);
     const [photoPreview, setPhotoPreview] = useState(null);
 
     const [errors, setErrors] = useState(null);
@@ -38,12 +38,7 @@ export default function VisitorEntry() {
         setLoading(true);
         setErrors(null);
 
-        // Required fields per spec: phone, first_name, surname, email, photo
-        if (!photoPreview) {
-            setErrors({ photo: ["Παρακαλώ βγάλτε μια φωτογραφία / ανεβάστε avatar."] });
-            setLoading(false);
-            return;
-        }
+        // Photo/avatar is optional — no block if missing
 
         const payload = {
             name: nameRef.current.value,
@@ -87,8 +82,8 @@ export default function VisitorEntry() {
                     <p className="text-gray-500 mb-8">
                         Τα στοιχεία σας αποθηκεύτηκαν επιτυχώς. Μπορείτε πλέον να προχωρήσετε στον έλεγχο εισιτηρίων!
                     </p>
-                    <button 
-                        onClick={() => window.location.reload()} 
+                    <button
+                        onClick={() => window.location.reload()}
                         className="w-full py-4 font-bold text-white bg-indigo-600 rounded-2xl hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-xl"
                     >
                         Νέα Καταγραφή
@@ -101,12 +96,12 @@ export default function VisitorEntry() {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center py-6 px-4">
             <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-                
+
                 {/* Header */}
                 <div className="bg-indigo-600 px-6 py-8 text-center text-white relative">
                     <div className="absolute inset-0 overflow-hidden">
                         <svg className="absolute left-0 top-0 h-full w-full opacity-10" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <path d="M0 100 C 20 0 50 0 100 100 Z" fill="currentColor"/>
+                            <path d="M0 100 C 20 0 50 0 100 100 Z" fill="currentColor" />
                         </svg>
                     </div>
                     <div className="relative z-10">
@@ -128,10 +123,10 @@ export default function VisitorEntry() {
                     )}
 
                     <form onSubmit={onSubmit} className="space-y-5">
-                        
-                        {/* Photo Capture */}
+
+                        {/* Photo Capture — Optional */}
                         <div className="flex flex-col items-center justify-center mb-6">
-                            <div 
+                            <div
                                 onClick={triggerCamera}
                                 className={`relative w-28 h-28 rounded-full border-4 flex items-center justify-center cursor-pointer overflow-hidden transition-all shadow-md group ${photoPreview ? 'border-indigo-500' : 'border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100'}`}
                             >
@@ -149,38 +144,39 @@ export default function VisitorEntry() {
                                     </div>
                                 )}
                             </div>
+                            <p className="mt-2 text-xs text-gray-400 font-medium">(Προαιρετικό)</p>
                             {/* Hidden file input */}
-                            <input 
-                                type="file" 
-                                accept="image/*" 
-                                capture="user" // Prompts for camera on mobile
-                                ref={photoRef} 
+                            <input
+                                type="file"
+                                accept="image/*"
+                                capture="user"
+                                ref={photoRef}
                                 onChange={handlePhotoChange}
-                                className="hidden" 
+                                className="hidden"
                             />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Όνομα</label>
-                                <input ref={nameRef} type="text" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="π.χ. Γιάννης"/>
+                                <input ref={nameRef} type="text" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="π.χ. Γιάννης" />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Επώνυμο</label>
-                                <input ref={surnameRef} type="text" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="π.χ. Παπαδόπουλος"/>
+                                <input ref={surnameRef} type="text" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="π.χ. Παπαδόπουλος" />
                             </div>
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Κινητό Τηλέφωνο</label>
-                            <input ref={phoneRef} type="tel" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="π.χ. 6900000000"/>
+                            <input ref={phoneRef} type="tel" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="π.χ. 6900000000" />
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Email</label>
-                            <input ref={emailRef} type="email" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="π.χ. email@example.com"/>
+                            <input ref={emailRef} type="email" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="π.χ. email@example.com" />
                         </div>
-                        
+
                         {/* Hidden password input to satisfy backend validation for standard register workflow */}
                         <div className="hidden">
                             <input ref={passwordRef} type="password" defaultValue="Visitor123!" />
